@@ -1,6 +1,7 @@
 import json
 import unicodedata
 import urllib.error
+import urllib.request
 
 import pytest
 
@@ -9,8 +10,6 @@ from tests.conftest import (
     ENGLISH_HELLO,
     KNOWN_LANG,
     KNOWN_WORD,
-    UNKNOWN_LANG,
-    UNKNOWN_WORD,
     DictionaryProviderTests,
 )
 
@@ -31,12 +30,18 @@ class _MockResponse:
         return self._bytes
 
 
+def _url(req) -> str:
+    """Extract the URL string from either a Request object or a plain string."""
+    return req.full_url if isinstance(req, urllib.request.Request) else req
+
+
 def _make_urlopen(responses: dict, default_error: bool = True):
     """Return a fake urlopen that maps URL substrings to response dicts.
 
     If no key matches and default_error is True, raises HTTP 404.
     """
-    def fake_urlopen(url):
+    def fake_urlopen(req):
+        url = _url(req)
         for key, data in responses.items():
             if key in url:
                 return _MockResponse(data)
@@ -62,8 +67,8 @@ class TestRemoteDictionary(DictionaryProviderTests):
         return RemoteDictionary()
 
     def test_http_error_returns_empty_list(self, monkeypatch):
-        def raise_404(url):
-            raise urllib.error.HTTPError(url, 404, "Not Found", {}, None)
+        def raise_404(req):
+            raise urllib.error.HTTPError(_url(req), 404, "Not Found", {}, None)
 
         monkeypatch.setattr("urllib.request.urlopen", raise_404)
         assert RemoteDictionary().lookup("nonexistent", "en") == []
@@ -71,15 +76,15 @@ class TestRemoteDictionary(DictionaryProviderTests):
     def test_missing_entries_key_returns_empty_list(self, monkeypatch):
         monkeypatch.setattr(
             "urllib.request.urlopen",
-            lambda url: _MockResponse({"other_key": []}),
+            lambda req: _MockResponse({"other_key": []}),
         )
         assert RemoteDictionary().lookup("hello", "en") == []
 
     def test_url_contains_word_and_lang(self, monkeypatch):
         captured = []
 
-        def fake_urlopen(url):
-            captured.append(url)
+        def fake_urlopen(req):
+            captured.append(_url(req))
             return _MockResponse({"entries": []})
 
         monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
@@ -91,8 +96,8 @@ class TestRemoteDictionary(DictionaryProviderTests):
     def test_url_percent_encodes_special_characters(self, monkeypatch):
         captured = []
 
-        def fake_urlopen(url):
-            captured.append(url)
+        def fake_urlopen(req):
+            captured.append(_url(req))
             return _MockResponse({"entries": []})
 
         monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
@@ -104,12 +109,12 @@ class TestRemoteDictionary(DictionaryProviderTests):
         captured_nfc = []
         captured_nfd = []
 
-        def capture_nfc(url):
-            captured_nfc.append(url)
+        def capture_nfc(req):
+            captured_nfc.append(_url(req))
             return _MockResponse({"entries": []})
 
-        def capture_nfd(url):
-            captured_nfd.append(url)
+        def capture_nfd(req):
+            captured_nfd.append(_url(req))
             return _MockResponse({"entries": []})
 
         nfc = unicodedata.normalize("NFC", "café")

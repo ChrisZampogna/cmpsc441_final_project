@@ -24,11 +24,19 @@ def get_definitions(word: str, lang_code: str) -> str:
     """
     Look up definitions of a word in a given language
     May return many results for the many senses of a word
+    Each definition will be printed on a new line
     Example inputs:
-        get_definitions("hello", "EN")
-        get_definitions("chat", "FR")
+        get_definitions("hello", "en")
+        get_definitions("chat", "fr")
     """
-    return "\n".join(dictionary.lookup(word, lang_code))
+    result = dictionary.lookup(word, lang_code)
+    glosses = [
+        gloss
+        for entry in result
+        for sense in entry.get("senses", [])
+        for gloss in sense.get("glosses", [])
+    ]
+    return "\n".join(glosses)
 
 if __name__ == "__main__":
     mcp.run()
