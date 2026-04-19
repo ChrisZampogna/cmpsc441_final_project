@@ -1,8 +1,9 @@
 import argparse
 import gzip
 import json
-import shlanguage_assistant
+import language_assistant
 import sqlite3
+import unicodedata
 import urllib.request
 from pathlib import Path
 
@@ -73,12 +74,16 @@ def build_db(force: bool) -> None:
     cur.execute("PRAGMA synchronous = NORMAL")
     cur.execute("""
         CREATE TABLE entries (
-            word TEXT NOT NULL,
-            pos  TEXT NOT NULL,
-            raw  TEXT NOT NULL
+            word      TEXT NOT NULL,
+            lang_code TEXT NOT NULL,
+            pos       TEXT NOT NULL,
+            raw       TEXT NOT NULL
         )
     """)
-    cur.execute("CREATE INDEX idx_word_pos ON entries (word, pos)")
+    cur.execute("CREATE INDEX idx_word          ON entries (word)")
+    cur.execute("CREATE INDEX idx_lang_code     ON entries (lang_code)")
+    cur.execute("CREATE INDEX idx_word_langcode ON entries (word, lang_code)")
+    cur.execute("CREATE INDEX idx_pos           ON entries (pos)")
 
     batch = []
     batch_size = 10_000
@@ -94,19 +99,23 @@ def build_db(force: bool) -> None:
             except json.JSONDecodeError:
                 continue
 
-            word = entry.get("word")
-            pos = entry.get("pos")
-            if word and pos:
-                batch.append((word, pos, line))
+            word      = entry.get("word")
+            lang_code = entry.get("lang_code")
+            pos       = entry.get("pos")
+            if word and lang_code and pos:
+                word      = unicodedata.normalize("NFC", word)
+                lang_code = unicodedata.normalize("NFC", lang_code)
+                pos       = unicodedata.normalize("NFC", pos)
+                batch.append((word, lang_code, pos, line))
 
             if len(batch) >= batch_size:
-                cur.executemany("INSERT INTO entries VALUES (?, ?, ?)", batch)
+                cur.executemany("INSERT INTO entries VALUES (?, ?, ?, ?)", batch)
                 row_count += len(batch)
                 batch.clear()
                 print(f"\r[db] {row_count:,} entries inserted", end="", flush=True)
 
     if batch:
-        cur.executemany("INSERT INTO entries VALUES (?, ?, ?)", batch)
+        cur.executemany("INSERT INTO entries VALUES (?, ?, ?, ?)", batch)
         row_count += len(batch)
 
     print(f"\r[db] {row_count:,} entries inserted")
