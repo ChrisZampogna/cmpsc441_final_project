@@ -3,10 +3,9 @@ import sqlite3
 import unicodedata
 from pathlib import Path
 
-from language_assistant.dictionary_provider import DictionaryProvider
+from server.dictionary_provider import DictionaryProvider
 
 DB_PATH = Path("data/generated/wiktionary.db")
-
 
 class LocalDictionary(DictionaryProvider):
     def __init__(self, db_path: Path = DB_PATH) -> None:

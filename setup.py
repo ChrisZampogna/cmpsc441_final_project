@@ -1,7 +1,7 @@
 import argparse
 import gzip
 import json
-import language_assistant
+import client
 import sqlite3
 import unicodedata
 import urllib.request

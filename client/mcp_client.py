@@ -6,7 +6,6 @@ from mcp.client.stdio import stdio_client, StdioServerParameters
 
 _LOG_PATH = Path("logs/mcp_server.log")
 
-
 class MCPClient:
     def __init__(self, server_script: str) -> None:
         self._params = StdioServerParameters(

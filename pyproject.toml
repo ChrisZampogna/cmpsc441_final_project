@@ -1,3 +1,6 @@
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
 [project]
 name = "cmpsc441-final-project"
 version = "0.1.0"
@@ -7,5 +10,6 @@ requires-python = ">=3.13"
 dependencies = [
     "fastmcp>=3.2.4",
     "ollama>=0.6.1",
+    "pytest>=9.0.3",
     "rich>=15.0.0",
 ]

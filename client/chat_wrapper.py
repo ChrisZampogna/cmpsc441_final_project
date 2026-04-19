@@ -4,10 +4,10 @@ from rich.markdown import Markdown
 from rich.live import Live
 from ollama import chat
 
-from language_assistant.console import console
-from language_assistant.messages_wrapper import MessagesWrapper
-from language_assistant.enum.chunk_type import ChunkType
-from language_assistant.enum.role import Role
+from client.console import console
+from client.messages_wrapper import MessagesWrapper
+from client.enum.chunk_type import ChunkType
+from client.enum.role import Role
 
 class ChatWrapper():
     def __init__(
