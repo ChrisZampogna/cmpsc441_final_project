@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from client.console import console
 from client.chat_wrapper import ChatWrapper
 from client.mcp_client import MCPClient
@@ -15,12 +17,12 @@ def main():
         model="qwen3.5:2b",
         seed="Christopher Zampogna",
         system_prompt="You are an AI agent who will assist the user with language study",
-        mcp_client=MCPClient("server/mcp_server.py"),
+        mcp_client=MCPClient(Path("server/mcp_server.py")),
     )
     chat_wrapper.provide_user_input("")
 
     while True:
-        console.print("\nAgent: ")
+        console.print("\nAgent: ", end="")
         chat_wrapper.stream_response()
 
         user_input = input("\nYou: ")

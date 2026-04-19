@@ -7,10 +7,11 @@ from mcp.client.stdio import stdio_client, StdioServerParameters
 _LOG_PATH = Path("logs/mcp_server.log")
 
 class MCPClient:
-    def __init__(self, server_script: str) -> None:
+    def __init__(self, server_script: Path) -> None:
+        module = ".".join(server_script.with_suffix("").parts)
         self._params = StdioServerParameters(
             command=sys.executable,
-            args=[server_script],
+            args=["-m", module],
         )
         _LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
         self._errlog = _LOG_PATH.open("a", encoding="utf-8")

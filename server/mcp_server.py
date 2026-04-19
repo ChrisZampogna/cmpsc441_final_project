@@ -3,9 +3,9 @@ import re
 from pathlib import Path
 
 from fastmcp import FastMCP
-from local_dictionary import LocalDictionary
-from remote_dictionary import RemoteDictionary
-from dictionary_provider import DictionaryProvider
+from server.local_dictionary import LocalDictionary
+from server.remote_dictionary import RemoteDictionary
+from server.dictionary_provider import DictionaryProvider
 from util.formatting import format_list
 
 mcp = FastMCP("dictionary")
