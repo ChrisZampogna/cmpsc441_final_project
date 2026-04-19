@@ -10,7 +10,11 @@ def main():
     streaming the assistant's response and reading user input until the user
     types '/exit'.
     """
-    chat_wrapper: ChatWrapper = ChatWrapper(seed="Christopher Zampogna")
+    chat_wrapper: ChatWrapper = ChatWrapper(
+        model="gemma3:270m",
+        seed="Christopher Zampogna"
+        system_prompt="You are an AI agent who will assist the user with language study"
+    )
     chat_wrapper.provide_user_input("")
 
     while True:

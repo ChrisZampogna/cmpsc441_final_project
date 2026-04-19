@@ -15,7 +15,7 @@ class ChatWrapper():
         model: str = "gemma3:270m",
         temperature: float = 0.7,
         seed: str | None = None,
-        system_prompt: str = "You are an AI agent who will assist the user with language study"
+        system_prompt: str = "You are an AI Agent. Be helpful to the user."
     ):
         """
         Initialize the chat wrapper.
