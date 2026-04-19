@@ -24,7 +24,7 @@
           export PYTHONPATH="$PYTHONPATH:$(pwd)"
           source .venv/bin/activate
 
-          MODEL="qwen3.5:2b"
+          MODEL="qwen3.5:0.8b"
 
           if ! ollama list | grep -q "$MODEL"; then
             echo "Pulling $MODEL..."

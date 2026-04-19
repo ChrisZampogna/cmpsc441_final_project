@@ -1,21 +1,13 @@
-import json
-import re
-from pathlib import Path
-
 from fastmcp import FastMCP
 from server.local_dictionary import LocalDictionary
 from server.remote_dictionary import RemoteDictionary
 from server.dictionary_provider import DictionaryProvider
 from util.formatting import format_list
+from util.config import load_config
 
 mcp = FastMCP("dictionary")
 
-def _load_config(path: Path = Path("config.jsonc")) -> dict:
-    text = path.read_text(encoding="utf-8")
-    stripped = re.sub(r"^\s*//.*$", "", text, flags=re.MULTILINE)
-    return json.loads(stripped)
-
-config = _load_config()
+config = load_config()
 match config.get("dictionaryProvider", "local"):
     case "remote":
         dictionary: DictionaryProvider = RemoteDictionary()

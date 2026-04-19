@@ -1,4 +1,8 @@
 {
   // Valid values: "remote" or "local"
-  "dictionaryProvider": "remote"
+  "dictionaryProvider": "remote",
+
+  // Valid values: any model supporting tool calling available through Ollama
+  // "model": "qwen3.5:2b",
+  "model": "qwen3.5:0.8b",
 }

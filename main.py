@@ -3,6 +3,7 @@ from pathlib import Path
 from client.console import console
 from client.chat_wrapper import ChatWrapper
 from client.mcp_client import MCPClient
+from util.config import load_config
 
 def main():
     """
@@ -13,8 +14,9 @@ def main():
     types '/exit'.
     """
 
+    config = load_config()
     chat_wrapper: ChatWrapper = ChatWrapper(
-        model="qwen3.5:2b",
+        model=config["model"],
         seed="Christopher Zampogna",
         system_prompt="You are an AI agent who will assist the user with language study",
         mcp_client=MCPClient(Path("server/mcp_server.py")),
