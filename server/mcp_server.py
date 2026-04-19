@@ -40,7 +40,7 @@ def get_definitions(word: str, lang_code: str) -> str:
         get_definitions("hello", "en")
         get_definitions("chat", "fr")
     """
-    result = dictionary.lookup(word, lang_code)
+    result = dictionary.lookup(word, lower(lang_code))
     glosses = [
         gloss
         for entry in result
