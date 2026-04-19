@@ -1,6 +1,6 @@
-from ollama import chat
 from language_assistant.console import console
 from language_assistant.chat_wrapper import ChatWrapper
+from language_assistant.mcp_client import MCPClient
 
 def main():
     """
@@ -10,10 +10,13 @@ def main():
     streaming the assistant's response and reading user input until the user
     types '/exit'.
     """
+    mcp_client = MCPClient("mcp_server.py")
+
     chat_wrapper: ChatWrapper = ChatWrapper(
-        model="gemma3:270m",
-        seed="Christopher Zampogna"
-        system_prompt="You are an AI agent who will assist the user with language study"
+        model="qwen3.5:2b",
+        seed="Christopher Zampogna",
+        system_prompt="You are an AI agent who will assist the user with language study",
+        mcp_client=mcp_client,
     )
     chat_wrapper.provide_user_input("")
 

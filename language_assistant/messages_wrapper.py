@@ -38,3 +38,22 @@ class MessagesWrapper():
             content (str): The model's response content.
         """
         self.ollama_messages_list.append({"role": Role.ASSISTANT, "thinking": thinking, "content": content})
+
+    def add_assistant_tool_call_message(self, tool_calls) -> None:
+        """
+        Append an assistant message containing tool calls to the conversation history.
+
+        Args:
+            tool_calls: The tool_calls sequence from the model's response message.
+        """
+        self.ollama_messages_list.append({"role": Role.ASSISTANT, "content": "", "tool_calls": tool_calls})
+
+    def add_tool_message(self, name: str, content: str) -> None:
+        """
+        Append a tool result message to the conversation history.
+
+        Args:
+            name (str): The name of the tool that was called.
+            content (str): The tool's output as a string.
+        """
+        self.ollama_messages_list.append({"role": "tool", "name": name, "content": content})
