@@ -23,6 +23,11 @@
         shellHook = ''
           export PYTHONPATH="$PYTHONPATH:$(pwd)"
           source .venv/bin/activate
+
+          if ! ollama list | grep -q "gemma3:270m"; then
+            echo "Pulling gemma3:270m..."
+            ollama pull gemma3:270m
+          fi
         '';
 
       };
