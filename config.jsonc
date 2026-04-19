@@ -1,0 +1,4 @@
+{
+  // Valid values: "remote" or "local"
+  "dictionaryProvider": "remote"
+}
