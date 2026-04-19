@@ -1,7 +1,7 @@
 import argparse
 import gzip
 import json
-import shutil
+import shlanguage_assistant
 import sqlite3
 import urllib.request
 from pathlib import Path
@@ -12,7 +12,6 @@ GEN_DIR = Path("data/generated")
 GZ_PATH = RAW_DIR / "raw-wiktextract-data.jsonl.gz"
 JSONL_PATH = RAW_DIR / "raw-wiktextract-data.jsonl"
 DB_PATH = GEN_DIR / "wiktionary.db"
-
 
 def download(force: bool) -> None:
     if GZ_PATH.exists() and not force:

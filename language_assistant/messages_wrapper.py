@@ -1,4 +1,4 @@
-from util.enum.role import Role
+from language_assistant.enum.role import Role
 
 class MessagesWrapper():
     def __init__(self, system_prompt: str = ""):

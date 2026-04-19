@@ -1,6 +1,6 @@
 from ollama import chat
-from util.console import console
-from util.chat_wrapper import ChatWrapper
+from language_assistant.console import console
+from language_assistant.chat_wrapper import ChatWrapper
 
 def main():
     """
