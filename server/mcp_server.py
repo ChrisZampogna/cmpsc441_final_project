@@ -1,9 +1,10 @@
 from fastmcp import FastMCP
 from local_dictionary import LocalDictionary
 from dictionary_provider import DictionaryProvider
+from util.formatting import format_list
 
 mcp = FastMCP("dictionary")
-dictionary: DictionaryProvider = LocalDictionary() # Run queries against local DB
+dictionary: DictionaryProvider = LocalDictionary()
 
 @mcp.tool()
 def hello_world() -> str:
@@ -36,7 +37,7 @@ def get_definitions(word: str, lang_code: str) -> str:
         for sense in entry.get("senses", [])
         for gloss in sense.get("glosses", [])
     ]
-    return "\n".join(glosses)
+    return format_list(glosses)
 
 if __name__ == "__main__":
     mcp.run()
