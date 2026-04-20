@@ -60,7 +60,7 @@ The defaults are chosen for the best out-of-the-box experience - the remote dict
 
 ## Optional: local dictionary setup
 
-The local dictionary provider queries a SQLite database built from a full Wiktionary data dump (~7 GB download, several GB on disk after processing). Only do this if you have the space and want fully offline operation.
+The local dictionary provider queries a SQLite database built from a full Wiktionary data dump (~2 GB download, ~20GB on disk after processing). Only do this if you have the space and want fully offline operation.
 
 ```bash
 uv run python setup.py
