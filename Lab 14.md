@@ -2,7 +2,7 @@
 
 ### Use Case Diagram:
 
-
+<img width="832" height="1417" alt="image" src="https://github.com/user-attachments/assets/f30f1e97-0080-4ca1-bb44-f4237a9758cd" />
 
 ### Use Case Completed:
 
