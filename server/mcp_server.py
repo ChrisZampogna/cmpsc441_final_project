@@ -1,8 +1,9 @@
 from fastmcp import FastMCP
+
 from server.local_dictionary import LocalDictionary
 from server.remote_dictionary import RemoteDictionary
 from server.dictionary_provider import DictionaryProvider
-from util.formatting import format_list
+from util.formatting import format_list, format_word_details
 from util.config import load_config
 
 mcp = FastMCP("dictionary")
@@ -48,6 +49,20 @@ def get_definitions(word: str, lang_code: str) -> str:
         for gloss in sense.get("glosses", [])
     ]
     return format_list(glosses)
+
+@mcp.tool()
+def get_word_details(word: str, lang_code: str) -> str:
+    """
+    Look up rich metadata for a word in a given language.
+    Returns part of speech, etymology, pronunciation (IPA), inflected forms,
+    and definitions with usage examples.
+    Use this when the user wants more than just a definition.
+    Example inputs:
+        get_word_details("chat", "fr")
+        get_word_details("run", "en")
+    """
+    entries = dictionary.describe(word, lang_code)
+    return format_word_details(word, lang_code, entries)
 
 if __name__ == "__main__":
     mcp.run()

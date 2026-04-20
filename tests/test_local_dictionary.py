@@ -60,3 +60,91 @@ class TestLocalDictionary(DictionaryProviderTests):
         result = provider.lookup(nfd, "fr")
         assert len(result) == 1
         assert result[0]["word"] == nfc
+
+
+class TestDescribe:
+    """Tests for DictionaryProvider.describe(), the concrete template method."""
+
+    RICH_ENTRY = {
+        "word": "chat",
+        "lang_code": "fr",
+        "pos": "noun",
+        "etymology_text": "From Latin cattus.",
+        "senses": [
+            {
+                "glosses": ["cat (feline)"],
+                "tags": ["masculine"],
+                "examples": [
+                    {"text": "Le chat dort.", "english": "The cat sleeps."}
+                ],
+            },
+            {
+                "glosses": ["tomcat"],
+                "tags": ["masculine"],
+            },
+        ],
+        "sounds": [{"ipa": "/ʃa/"}, {"audio": "Fr-chat.ogg"}],
+        "forms": [
+            {"form": "chats", "tags": ["plural"]},
+            {"form": "chatte", "tags": ["feminine"]},
+        ],
+    }
+
+    @pytest.fixture
+    def provider(self, tmp_path):
+        return _make_db(
+            tmp_path,
+            [("chat", "fr", "noun", json.dumps(self.RICH_ENTRY))],
+        )
+
+    def test_describe_returns_list(self, provider):
+        assert isinstance(provider.describe("chat", "fr"), list)
+
+    def test_describe_unknown_word_returns_empty(self, provider):
+        assert provider.describe("zzz_notaword", "fr") == []
+
+    def test_describe_extracts_pos(self, provider):
+        result = provider.describe("chat", "fr")
+        assert result[0]["pos"] == "noun"
+
+    def test_describe_extracts_etymology(self, provider):
+        result = provider.describe("chat", "fr")
+        assert result[0]["etymology"] == "From Latin cattus."
+
+    def test_describe_extracts_ipa_only(self, provider):
+        """Non-IPA sound entries (audio files) are excluded."""
+        result = provider.describe("chat", "fr")
+        assert result[0]["ipa"] == ["/ʃa/"]
+
+    def test_describe_extracts_forms(self, provider):
+        result = provider.describe("chat", "fr")
+        forms = result[0]["forms"]
+        assert {"form": "chats", "tags": ["plural"]} in forms
+        assert {"form": "chatte", "tags": ["feminine"]} in forms
+
+    def test_describe_extracts_glosses(self, provider):
+        result = provider.describe("chat", "fr")
+        senses = result[0]["senses"]
+        assert senses[0]["glosses"] == ["cat (feline)"]
+
+    def test_describe_extracts_tags(self, provider):
+        result = provider.describe("chat", "fr")
+        assert result[0]["senses"][0]["tags"] == ["masculine"]
+
+    def test_describe_extracts_example(self, provider):
+        result = provider.describe("chat", "fr")
+        sense = result[0]["senses"][0]
+        assert sense["example"] == "Le chat dort."
+        assert sense["example_translation"] == "The cat sleeps."
+
+    def test_describe_sense_without_example_omits_key(self, provider):
+        result = provider.describe("chat", "fr")
+        sense = result[0]["senses"][1]
+        assert "example" not in sense
+
+    def test_describe_entry_without_etymology_omits_key(self, tmp_path):
+        entry = dict(self.RICH_ENTRY)
+        del entry["etymology_text"]
+        provider = _make_db(tmp_path, [("chat", "fr", "noun", json.dumps(entry))])
+        result = provider.describe("chat", "fr")
+        assert "etymology" not in result[0]
