@@ -2,5 +2,7 @@ __pycache__/
 .venv/
 data/raw/
 data/generated/
+data/chroma_db/
+data/user/
 logs/
 manual_run.py

@@ -4,5 +4,13 @@
 
   // Valid values: any model supporting tool calling available through Ollama
   // "model": "qwen3.5:2b"
-  "model": "qwen3.5:0.8b"
+  "model": "qwen3.5:0.8b",
+
+  // RAG settings for book search
+  "ragEmbedModel": "nomic-embed-text",
+  "ragChunkSize": 500,
+  "ragChunkOverlap": 50,
+  "ragTopK": 3,
+  "ragDbPath": "data/chroma_db",
+  "ragCollectionName": "spanish_books"
 }

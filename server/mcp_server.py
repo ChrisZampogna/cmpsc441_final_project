@@ -3,6 +3,7 @@ from fastmcp import FastMCP
 from server.local_dictionary import LocalDictionary
 from server.remote_dictionary import RemoteDictionary
 from server.dictionary_provider import DictionaryProvider
+from server.rag_provider import RagProvider
 from util.formatting import format_list, format_word_details
 from util.config import load_config
 
@@ -16,6 +17,14 @@ match config.get("dictionaryProvider", "local"):
         dictionary: DictionaryProvider = LocalDictionary()
     case other:
         raise ValueError(f"Unknown dictionaryProvider: {other}")
+
+_rag: RagProvider | None = None
+
+def get_rag() -> RagProvider:
+    global _rag
+    if _rag is None:
+        _rag = RagProvider(config)
+    return _rag
 
 @mcp.tool()
 def hello_world() -> str:
@@ -63,6 +72,22 @@ def get_word_details(word: str, lang_code: str) -> str:
     """
     entries = dictionary.describe(word, lang_code)
     return format_word_details(word, lang_code, entries)
+
+@mcp.tool()
+def search_books(query: str) -> str:
+    """
+    Search the Spanish language textbooks for information relevant to a grammar
+    or vocabulary question. Returns the most relevant passages from:
+    - Libro Libre (Spanish textbook)
+    - Spanish Grammar Manual
+    Use this when the user asks grammar questions or wants explanations of
+    Spanish language rules.
+    Example inputs:
+        search_books("subjunctive mood usage")
+        search_books("ser vs estar difference")
+        search_books("preterite vs imperfect")
+    """
+    return get_rag().search(query)
 
 if __name__ == "__main__":
     mcp.run()

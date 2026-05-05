@@ -18,10 +18,13 @@
         packages = with pkgs; [
           uv
           python313
+          stdenv.cc.cc.lib
+          zlib
         ];
 
         shellHook = ''
           export PYTHONPATH="$PYTHONPATH:$(pwd)"
+          export LD_LIBRARY_PATH="${pkgs.stdenv.cc.cc.lib}/lib:${pkgs.zlib}/lib:$LD_LIBRARY_PATH"
           source .venv/bin/activate
 
           MODEL="qwen3.5:0.8b"

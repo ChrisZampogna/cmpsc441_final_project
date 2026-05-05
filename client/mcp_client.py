@@ -1,4 +1,5 @@
 import asyncio
+import os
 import sys
 from pathlib import Path
 from mcp import ClientSession
@@ -9,9 +10,13 @@ _LOG_PATH = Path("logs/mcp_server.log")
 class MCPClient:
     def __init__(self, server_script: Path) -> None:
         module = ".".join(server_script.with_suffix("").parts)
+        extra_env = {}
+        if ld_path := os.environ.get("LD_LIBRARY_PATH"):
+            extra_env["LD_LIBRARY_PATH"] = ld_path
         self._params = StdioServerParameters(
             command=sys.executable,
             args=["-m", module],
+            env=extra_env if extra_env else None,
         )
         _LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
         self._errlog = _LOG_PATH.open("a", encoding="utf-8")
