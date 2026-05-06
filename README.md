@@ -6,11 +6,11 @@ My CMPSC 441 Final Project - an AI foreign language study assistant
 
 - [X] Wiktionary API connectivity
 - [X] Get word metadata from API
-- [ ] Add vocab words to an internal list
-- [ ] Automatically add collections of vocabulary words based on a category
-- [ ] Generate example sentences
-- [ ] Review grammatical gender
-- [ ] Ask/answer grammar questions (based on RAG)
+- [X] Add vocab words to an internal list
+- [X] Automatically add collections of vocabulary words based on a category
+- [X] Generate example sentences
+- [X] Review grammatical gender
+- [X] Ask/answer grammar questions (based on RAG)
 - [ ] Generate study plans
 - [ ] Generate Anki cards
 
