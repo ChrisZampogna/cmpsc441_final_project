@@ -53,8 +53,12 @@ class RagProvider:
                 name=self._collection_name,
                 embedding_function=self._embedding_fn,
             )
-            if collection.count() > 0:
+            expected = len(self._load_and_chunk_books())
+            actual = collection.count()
+            if actual == expected:
+                print(f"[RAG] Loaded existing index ({actual} chunks).", flush=True)
                 return collection
+            print(f"[RAG] Index incomplete ({actual}/{expected} chunks), rebuilding...", flush=True)
             client.delete_collection(self._collection_name)
 
         collection = client.create_collection(
@@ -63,11 +67,16 @@ class RagProvider:
         )
         chunks = self._load_and_chunk_books()
         if chunks:
-            collection.add(
-                ids=[c["id"] for c in chunks],
-                documents=[c["text"] for c in chunks],
-                metadatas=[c["metadata"] for c in chunks],
-            )
+            batch_size = 100
+            total = len(chunks)
+            for i in range(0, total, batch_size):
+                batch = chunks[i:i + batch_size]
+                collection.add(
+                    ids=[c["id"] for c in batch],
+                    documents=[c["text"] for c in batch],
+                    metadatas=[c["metadata"] for c in batch],
+                )
+                print(f"[RAG] Indexed {min(i + batch_size, total)}/{total} chunks...", flush=True)
         return collection
 
     def _load_and_chunk_books(self) -> list[dict]:
