@@ -24,8 +24,7 @@ def main():
     chat_wrapper.provide_user_input("")
 
     while True:
-        console.print("\nAgent: ", end="")
-        chat_wrapper.stream_response()
+        chat_wrapper.stream_response(prefix="\nAgent: ")
 
         user_input = input("\nYou: ")
         if user_input == "/exit":

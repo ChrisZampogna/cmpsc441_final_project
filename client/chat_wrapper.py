@@ -95,7 +95,7 @@ class ChatWrapper():
                 result = self._mcp_client.call_tool(name, arguments)
                 self.messages.add_tool_message(name, result)
 
-    def stream_response(self) -> None:
+    def stream_response(self, prefix: str = "") -> None:
         """
         Stream the model's response, rendering content as live markdown in the terminal.
         Thinking tokens are printed as plain dimmed text. When the stream is complete,
@@ -103,6 +103,9 @@ class ChatWrapper():
 
         If an MCP client is configured, tool calls are resolved first via a non-streaming
         loop before the final response is streamed.
+
+        Args:
+            prefix (str): Optional label prepended to the rendered markdown (e.g. "Agent: ").
         """
         if self._tools:
             self._run_tool_loop()
@@ -117,7 +120,7 @@ class ChatWrapper():
                         thinking += text
                     case ChunkType.CONTENT:
                         content += text
-                        live.update(Markdown(content))
+                        live.update(Markdown(prefix + content))
         self.messages.add_assistant_message(thinking, content)
 
     def provide_user_input(self, user_input: str) -> None:
