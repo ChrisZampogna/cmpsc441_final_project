@@ -1,9 +1,12 @@
+import random
+
 from fastmcp import FastMCP
 
 from server.local_dictionary import LocalDictionary
 from server.remote_dictionary import RemoteDictionary
 from server.dictionary_provider import DictionaryProvider
 from server.rag_provider import RagProvider
+from server.vocab_store import VocabStore
 from util.formatting import format_list, format_word_details
 from util.config import load_config
 
@@ -17,6 +20,8 @@ match config.get("dictionaryProvider", "local"):
         dictionary: DictionaryProvider = LocalDictionary()
     case other:
         raise ValueError(f"Unknown dictionaryProvider: {other}")
+
+vocab_store = VocabStore()
 
 _rag: RagProvider | None = None
 
@@ -50,7 +55,7 @@ def get_definitions(word: str, lang_code: str) -> str:
         get_definitions("hello", "en")
         get_definitions("chat", "fr")
     """
-    result = dictionary.lookup(word, lower(lang_code))
+    result = dictionary.lookup(word, lang_code.lower())
     glosses = [
         gloss
         for entry in result
@@ -88,6 +93,138 @@ def search_books(query: str) -> str:
         search_books("preterite vs imperfect")
     """
     return get_rag().search(query)
+
+@mcp.tool()
+def add_vocab_word(word: str, lang_code: str) -> str:
+    """
+    Add a single word to the user's vocabulary list for a given language.
+    Example inputs:
+        add_vocab_word("hola", "es")
+        add_vocab_word("bonjour", "fr")
+    """
+    added = vocab_store.add_word(word, lang_code)
+    if added:
+        return f"Added '{word}' to {lang_code} vocabulary list."
+    return f"'{word}' is already in the {lang_code} vocabulary list."
+
+
+@mcp.tool()
+def add_vocab_words(words: list[str], lang_code: str) -> str:
+    """
+    Add multiple words to the user's vocabulary list for a given language.
+    Use this to bulk-add a category of words (e.g. foods, colors, verbs).
+    Example inputs:
+        add_vocab_words(["manzana", "pollo", "arroz"], "es")
+        add_vocab_words(["rouge", "bleu", "vert"], "fr")
+    """
+    added, skipped = vocab_store.add_words(words, lang_code)
+    return f"Added {added} word(s) to {lang_code} vocabulary list, skipped {skipped} duplicate(s)."
+
+
+@mcp.tool()
+def remove_vocab_word(word: str, lang_code: str) -> str:
+    """
+    Remove a word from the user's vocabulary list for a given language.
+    Example inputs:
+        remove_vocab_word("hola", "es")
+        remove_vocab_word("bonjour", "fr")
+    """
+    removed = vocab_store.remove_word(word, lang_code)
+    if removed:
+        return f"Removed '{word}' from {lang_code} vocabulary list."
+    return f"'{word}' was not found in the {lang_code} vocabulary list."
+
+
+@mcp.tool()
+def list_vocab_words(lang_code: str) -> str:
+    """
+    List all vocabulary words saved for a given language.
+    Example inputs:
+        list_vocab_words("es")
+        list_vocab_words("fr")
+    """
+    words = vocab_store.list_words(lang_code)
+    if not words:
+        return f"No vocabulary words saved for '{lang_code}'."
+    return format_list(words)
+
+
+@mcp.tool()
+def clear_vocab_list(lang_code: str) -> str:
+    """
+    Remove all vocabulary words for a given language.
+    Example inputs:
+        clear_vocab_list("es")
+        clear_vocab_list("fr")
+    """
+    count = vocab_store.clear_words(lang_code)
+    return f"Cleared {count} word(s) from {lang_code} vocabulary list."
+
+
+@mcp.tool()
+def get_word_examples(word: str, lang_code: str) -> str:
+    """
+    Retrieve attested example sentences for a word from the dictionary.
+    Use this to ground your own example sentence generation in real usage.
+    Example inputs:
+        get_word_examples("comer", "es")
+        get_word_examples("courir", "fr")
+    """
+    entries = dictionary.describe(word, lang_code)
+    lines = []
+    for entry in entries:
+        for sense in entry.get("senses", []):
+            example = sense.get("example", "")
+            if example:
+                lines.append(f"- {example}")
+                translation = sense.get("example_translation", "")
+                if translation:
+                    lines.append(f"  ({translation})")
+    if not lines:
+        return f"No attested examples found for '{word}' ({lang_code})."
+    return "\n".join(lines)
+
+
+_GENDER_TAGS = {"masculine", "feminine", "neuter", "common", "common-gender"}
+
+
+@mcp.tool()
+def get_random_vocab_word(lang_code: str) -> str:
+    """
+    Return a random word from the user's vocabulary list for a given language.
+    Use this to start a gender quiz: present the word to the user and ask them
+    to guess its grammatical gender, then call check_grammatical_gender to verify.
+    Example inputs:
+        get_random_vocab_word("es")
+        get_random_vocab_word("fr")
+    """
+    words = vocab_store.list_words(lang_code)
+    if not words:
+        return f"No vocabulary words saved for '{lang_code}'. Add some words first."
+    return random.choice(words)
+
+
+@mcp.tool()
+def check_grammatical_gender(word: str, lang_code: str) -> str:
+    """
+    Look up the grammatical gender(s) of a word from the dictionary.
+    Call this after the user has guessed, to verify their answer.
+    Returns the correct gender(s) or a message if gender info is unavailable.
+    Example inputs:
+        check_grammatical_gender("manzana", "es")
+        check_grammatical_gender("chat", "fr")
+    """
+    entries = dictionary.describe(word, lang_code)
+    genders: set[str] = set()
+    for entry in entries:
+        for sense in entry.get("senses", []):
+            for tag in sense.get("tags", []):
+                if tag in _GENDER_TAGS:
+                    genders.add(tag)
+    if not genders:
+        return f"No grammatical gender information found for '{word}' ({lang_code})."
+    return " or ".join(sorted(genders))
+
 
 if __name__ == "__main__":
     mcp.run()

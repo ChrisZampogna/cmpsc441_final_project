@@ -4,5 +4,6 @@ data/raw/
 data/generated/
 data/chroma_db/
 data/user/
+data/vocab.db
 logs/
 manual_run.py
