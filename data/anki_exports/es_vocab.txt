@@ -1,0 +1,7 @@
+#separator:tab
+#html:false
+#deck:ES Vocabulary
+#notetype:Basic
+#columns:Front	Back
+hola	(intj) | [/ˈola/, [ˈo.la]] | hello, hi, hey
+iglesia	(noun) | [/iˈɡlesja/, [iˈɣ̞le.sja]] | church

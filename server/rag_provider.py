@@ -1,5 +1,6 @@
 import glob
 import os
+import sys
 from typing import List
 
 import chromadb
@@ -56,9 +57,9 @@ class RagProvider:
             expected = len(self._load_and_chunk_books())
             actual = collection.count()
             if actual == expected:
-                print(f"[RAG] Loaded existing index ({actual} chunks).", flush=True)
+                print(f"[RAG] Loaded existing index ({actual} chunks).", flush=True, file=sys.stderr)
                 return collection
-            print(f"[RAG] Index incomplete ({actual}/{expected} chunks), rebuilding...", flush=True)
+            print(f"[RAG] Index incomplete ({actual}/{expected} chunks), rebuilding...", flush=True, file=sys.stderr)
             client.delete_collection(self._collection_name)
 
         collection = client.create_collection(
@@ -76,7 +77,7 @@ class RagProvider:
                     documents=[c["text"] for c in batch],
                     metadatas=[c["metadata"] for c in batch],
                 )
-                print(f"[RAG] Indexed {min(i + batch_size, total)}/{total} chunks...", flush=True)
+                print(f"[RAG] Indexed {min(i + batch_size, total)}/{total} chunks...", flush=True, file=sys.stderr)
         return collection
 
     def _load_and_chunk_books(self) -> list[dict]:

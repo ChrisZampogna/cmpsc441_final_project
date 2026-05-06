@@ -1,4 +1,5 @@
 import random
+from pathlib import Path
 
 from fastmcp import FastMCP
 
@@ -218,6 +219,68 @@ def check_grammatical_gender(word: str, lang_code: str) -> str:
     if not genders:
         return f"No grammatical gender information found for '{word}' ({lang_code})."
     return " or ".join(sorted(genders))
+
+
+_ANKI_EXPORT_DIR = Path("data/anki_exports")
+
+
+@mcp.tool()
+def export_anki_deck(lang_code: str, deck_name: str = "") -> str:
+    """
+    Export the user's vocabulary list as an Anki flashcard deck (.txt import file).
+    Use this whenever the user asks to:
+      - export vocab/words to Anki
+      - generate Anki cards/flashcards from their word list
+      - create an Anki deck from saved vocabulary
+      - download or save flashcards
+    The exported file can be imported into Anki via File > Import.
+    Each card has the vocab word on the front and its definitions on the back.
+    Returns the path to the exported file.
+    If the user does not specify a language, ask before calling this tool.
+    Example inputs:
+        export_anki_deck("es")
+        export_anki_deck("fr", "French Vocab")
+    """
+    words = vocab_store.list_words(lang_code)
+    if not words:
+        return f"{ToolStatus.NOT_FOUND}: No vocabulary words found for '{lang_code}'. Add some words first."
+
+    resolved_deck = deck_name.strip() if deck_name.strip() else f"{lang_code.upper()} Vocabulary"
+
+    lines = [
+        "#separator:tab",
+        "#html:false",
+        f"#deck:{resolved_deck}",
+        "#notetype:Basic",
+        "#columns:Front\tBack",
+    ]
+
+    for word in words:
+        entries = dictionary.describe(word, lang_code)
+        back_parts = []
+        for entry in entries:
+            pos = entry.get("pos", "")
+            ipa_list = entry.get("ipa", [])
+            senses = entry.get("senses", [])
+            glosses = [g for s in senses for g in s.get("glosses", [])]
+            if pos:
+                back_parts.append(f"({pos})")
+            if ipa_list:
+                back_parts.append(f"[{', '.join(ipa_list)}]")
+            if glosses:
+                back_parts.append("; ".join(glosses[:3]))
+
+        back = " | ".join(back_parts) if back_parts else f"[no definition found]"
+        lines.append(f"{word}\t{back}")
+
+    _ANKI_EXPORT_DIR.mkdir(parents=True, exist_ok=True)
+    out_path = _ANKI_EXPORT_DIR / f"{lang_code}_vocab.txt"
+    out_path.write_text("\n".join(lines), encoding="utf-8")
+
+    return (
+        f"{ToolStatus.SUCCESS}: Exported {len(words)} card(s) to '{out_path}'.\n"
+        f"To import: open Anki → File → Import → select the file → confirm settings."
+    )
 
 
 if __name__ == "__main__":

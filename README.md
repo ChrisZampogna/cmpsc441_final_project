@@ -11,8 +11,8 @@ My CMPSC 441 Final Project - an AI foreign language study assistant
 - [X] Generate example sentences
 - [X] Review grammatical gender
 - [X] Ask/answer grammar questions (based on RAG)
-- [ ] Generate study plans
-- [ ] Generate Anki cards
+- [X] Generate study plans
+- [X] Generate Anki cards
 
 ## Prerequisites
 
