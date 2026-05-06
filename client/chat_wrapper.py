@@ -12,7 +12,7 @@ from client.enum.role import Role
 class ChatWrapper():
     def __init__(
         self,
-        model: str = "qwen3.5:2b",
+        model: str = "qwen2.5:7b",
         temperature: float = 0.7,
         seed: str | None = None,
         system_prompt: str = "You are an AI Agent. Be helpful to the user.",
@@ -70,13 +70,13 @@ class ChatWrapper():
                 case msg if msg.content:
                     yield ChunkType.CONTENT, msg.content
 
-    def _run_tool_loop(self) -> None:
+    def _run_tool_loop(self, max_iterations: int = 10) -> None:
         """
         Run non-streaming chat turns until the model stops issuing tool calls.
         Each tool call is dispatched via the MCP client and the result appended
-        to history before the next turn.
+        to history before the next turn. Stops after max_iterations to prevent loops.
         """
-        while True:
+        for iteration in range(max_iterations):
             response = chat(
                 model=self.model,
                 messages=self.messages.get_messages(),
@@ -86,6 +86,9 @@ class ChatWrapper():
             )
             msg = response.message
             if not msg.tool_calls:
+                break
+            if iteration == max_iterations - 1:
+                console.print(f"[yellow][tool] Reached {max_iterations}-call limit, stopping tool loop.[/yellow]")
                 break
             self.messages.add_assistant_tool_call_message(msg.tool_calls)
             for tool_call in msg.tool_calls:

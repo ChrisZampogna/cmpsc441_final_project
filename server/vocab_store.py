@@ -8,7 +8,7 @@ VOCAB_DB_PATH = Path("data/vocab.db")
 class VocabStore:
     def __init__(self, db_path: Path = VOCAB_DB_PATH) -> None:
         db_path.parent.mkdir(parents=True, exist_ok=True)
-        self._con = sqlite3.connect(db_path)
+        self._con = sqlite3.connect(db_path, check_same_thread=False)
         self._con.execute("""
             CREATE TABLE IF NOT EXISTS vocab_words (
                 id        INTEGER PRIMARY KEY AUTOINCREMENT,

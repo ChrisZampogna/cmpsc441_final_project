@@ -5,6 +5,7 @@ from fastmcp import FastMCP
 from server.local_dictionary import LocalDictionary
 from server.remote_dictionary import RemoteDictionary
 from server.dictionary_provider import DictionaryProvider
+from server.enum.tool_status import ToolStatus
 from server.rag_provider import RagProvider
 from server.vocab_store import VocabStore
 from util.formatting import format_list, format_word_details
@@ -30,20 +31,6 @@ def get_rag() -> RagProvider:
     if _rag is None:
         _rag = RagProvider(config)
     return _rag
-
-@mcp.tool()
-def hello_world() -> str:
-    """
-    Returns hello world (tests if tool calling is working)
-    """
-    return "hello world"
-
-@mcp.tool()
-def add(a: int, b: int) -> int:
-    """
-    Add two integers (tests if tool calling is working)
-    """
-    return a + b
 
 @mcp.tool()
 def get_definitions(word: str, lang_code: str) -> str:
@@ -104,8 +91,8 @@ def add_vocab_word(word: str, lang_code: str) -> str:
     """
     added = vocab_store.add_word(word, lang_code)
     if added:
-        return f"Added '{word}' to {lang_code} vocabulary list."
-    return f"'{word}' is already in the {lang_code} vocabulary list."
+        return f"{ToolStatus.SUCCESS}: '{word}' was added to the {lang_code} vocabulary list."
+    return f"{ToolStatus.DUPLICATE}: '{word}' is already in the {lang_code} vocabulary list. No action needed."
 
 
 @mcp.tool()
@@ -118,7 +105,10 @@ def add_vocab_words(words: list[str], lang_code: str) -> str:
         add_vocab_words(["rouge", "bleu", "vert"], "fr")
     """
     added, skipped = vocab_store.add_words(words, lang_code)
-    return f"Added {added} word(s) to {lang_code} vocabulary list, skipped {skipped} duplicate(s)."
+    parts = [f"{ToolStatus.SUCCESS}: Added {added} word(s) to the {lang_code} vocabulary list."]
+    if skipped:
+        parts.append(f"{skipped} duplicate(s) were already present and skipped.")
+    return " ".join(parts)
 
 
 @mcp.tool()
@@ -131,34 +121,37 @@ def remove_vocab_word(word: str, lang_code: str) -> str:
     """
     removed = vocab_store.remove_word(word, lang_code)
     if removed:
-        return f"Removed '{word}' from {lang_code} vocabulary list."
-    return f"'{word}' was not found in the {lang_code} vocabulary list."
+        return f"{ToolStatus.SUCCESS}: '{word}' was removed from the {lang_code} vocabulary list."
+    return f"{ToolStatus.NOT_FOUND}: '{word}' was not in the {lang_code} vocabulary list. No action taken."
 
 
 @mcp.tool()
 def list_vocab_words(lang_code: str) -> str:
     """
     List all vocabulary words saved for a given language.
+    If the user does not specify a language, ask them which language before calling this tool.
+    Do not guess the language or call this tool multiple times for different languages.
     Example inputs:
         list_vocab_words("es")
         list_vocab_words("fr")
     """
     words = vocab_store.list_words(lang_code)
     if not words:
-        return f"No vocabulary words saved for '{lang_code}'."
-    return format_list(words)
+        return f"{ToolStatus.SUCCESS}: The {lang_code} vocabulary list is empty (no words added yet)."
+    return f"{ToolStatus.SUCCESS}: Found {len(words)} word(s) in the {lang_code} vocabulary list:\n" + format_list(words)
 
 
 @mcp.tool()
 def clear_vocab_list(lang_code: str) -> str:
     """
     Remove all vocabulary words for a given language.
+    If the user does not specify a language, ask them which language before calling this tool.
     Example inputs:
         clear_vocab_list("es")
         clear_vocab_list("fr")
     """
     count = vocab_store.clear_words(lang_code)
-    return f"Cleared {count} word(s) from {lang_code} vocabulary list."
+    return f"{ToolStatus.SUCCESS}: Cleared {count} word(s) from the {lang_code} vocabulary list."
 
 
 @mcp.tool()
@@ -194,6 +187,7 @@ def get_random_vocab_word(lang_code: str) -> str:
     Return a random word from the user's vocabulary list for a given language.
     Use this to start a gender quiz: present the word to the user and ask them
     to guess its grammatical gender, then call check_grammatical_gender to verify.
+    If the user does not specify a language, ask them which language before calling this tool.
     Example inputs:
         get_random_vocab_word("es")
         get_random_vocab_word("fr")

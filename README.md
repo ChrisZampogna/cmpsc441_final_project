@@ -18,12 +18,12 @@ My CMPSC 441 Final Project - an AI foreign language study assistant
 
 - Python 3.13
 - [uv](https://docs.astral.sh/uv/)
-- [Ollama](https://ollama.com/) with the `qwen3.5:0.8b` model pulled
+- [Ollama](https://ollama.com/) with the `qwen2.5:7b` model pulled
 
 Pull the model if you haven't already:
 
 ```bash
-ollama pull qwen3.5:0.8b
+ollama pull qwen2.5:7b
 ```
 
 ## Installation

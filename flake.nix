@@ -27,7 +27,7 @@
           export LD_LIBRARY_PATH="${pkgs.stdenv.cc.cc.lib}/lib:${pkgs.zlib}/lib:$LD_LIBRARY_PATH"
           source .venv/bin/activate
 
-          MODEL="qwen3.5:0.8b"
+          MODEL="qwen2.5:7b"
 
           if ! ollama list | grep -q "$MODEL"; then
             echo "Pulling $MODEL..."

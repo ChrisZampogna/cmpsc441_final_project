@@ -1,5 +1,6 @@
+import sys
 from rich.console import Console
 
-# The idea here is to have one global instance of "console" (i.e. a singleton)
-# This way, we can write to the same console from anywhere in the program
-console = Console()
+# force_terminal=True prevents Rich from disabling output when it can't detect
+# an interactive TTY (common in VSCode's integrated terminal on Windows)
+console = Console(force_terminal=True, file=sys.stdout)
