@@ -27,7 +27,9 @@
           export LD_LIBRARY_PATH="${pkgs.stdenv.cc.cc.lib}/lib:${pkgs.zlib}/lib:$LD_LIBRARY_PATH"
           source .venv/bin/activate
 
-          for MODEL in "qwen2.5:7b" "nomic-embed-text"; do
+          required_models=("qwen2.5:3b" "nomic-embed-text")
+
+          for MODEL in $required_models; do
             if ! ollama list | grep -q "$MODEL"; then
               echo "Pulling $MODEL..."
               ollama pull "$MODEL"

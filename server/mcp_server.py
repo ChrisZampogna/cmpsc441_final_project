@@ -25,6 +25,7 @@ match config.get("dictionaryProvider", "local"):
 
 vocab_store = VocabStore()
 
+_rag_enabled = config.get("ragEnabled", True)
 _rag: RagProvider | None = None
 
 def get_rag() -> RagProvider:
@@ -32,6 +33,9 @@ def get_rag() -> RagProvider:
     if _rag is None:
         _rag = RagProvider(config)
     return _rag
+
+if not _rag_enabled:
+    print("[RAG] Disabled via config (ragEnabled: false). search_books tool not registered.", flush=True)
 
 @mcp.tool()
 def get_definitions(word: str, lang_code: str) -> str:
@@ -66,21 +70,22 @@ def get_word_details(word: str, lang_code: str) -> str:
     entries = dictionary.describe(word, lang_code)
     return format_word_details(word, lang_code, entries)
 
-@mcp.tool()
-def search_books(query: str) -> str:
-    """
-    Search the Spanish language textbooks for information relevant to a grammar
-    or vocabulary question. Returns the most relevant passages from:
-    - Libro Libre (Spanish textbook)
-    - Spanish Grammar Manual
-    Use this when the user asks grammar questions or wants explanations of
-    Spanish language rules.
-    Example inputs:
-        search_books("subjunctive mood usage")
-        search_books("ser vs estar difference")
-        search_books("preterite vs imperfect")
-    """
-    return get_rag().search(query)
+if _rag_enabled:
+    @mcp.tool()
+    def search_books(query: str) -> str:
+        """
+        Search the Spanish language textbooks for information relevant to a grammar
+        or vocabulary question. Returns the most relevant passages from:
+        - Libro Libre (Spanish textbook)
+        - Spanish Grammar Manual
+        Use this when the user asks grammar questions or wants explanations of
+        Spanish language rules.
+        Example inputs:
+            search_books("subjunctive mood usage")
+            search_books("ser vs estar difference")
+            search_books("preterite vs imperfect")
+        """
+        return get_rag().search(query)
 
 @mcp.tool()
 def add_vocab_word(word: str, lang_code: str) -> str:

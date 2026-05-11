@@ -3,7 +3,10 @@
   "dictionaryProvider": "remote",
 
   // Valid values: any model supporting tool calling available through Ollama
-  "model": "qwen2.5:7b",
+  "model": "qwen2.5:3b",
+
+  // Set to false to disable RAG (skips building/loading the vector DB)
+  "ragEnabled": false,
 
   // RAG settings for book search
   "ragEmbedModel": "nomic-embed-text",
